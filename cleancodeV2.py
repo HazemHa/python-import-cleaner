@@ -134,10 +134,14 @@ class ModifyFileHandler(AbstractHandler):
         # read entire content of file into memory
         s_content = currentScript.readlines()
         currentErrorInFile = s_content[request['line']-1].decode()
+
+        line_number_results_confirmation = list(
+            re.finditer(regex_extract_error, currentErrorInFile))
+
         errorImport = request['message']+"\n"
         # IF YOU REMOVE THIS CONDATION YOU WILL  COMMENT ALL OF YOU CODE :)
         # HIGHLY NOT RECOMMEND :(
-        if(errorImport == currentErrorInFile):
+        if(len(line_number_results_confirmation) > 0):
             s_content[request['line']-1] = f"#{errorImport}".encode()
             # return pointer to top of file so we can re-write the content with replaced string
             currentScript.seek(0)
@@ -150,9 +154,16 @@ class ModifyFileHandler(AbstractHandler):
             currentScript.close()
             return True
         else:
-
-            print("CURRENT LINE : ", errorImport)
-            print("the error inside script mismatch with regex compiler message")
+            # if(len(errorImport) != len(currentErrorInFile)):
+            #    print("Please search about it again")
+            # print("CURRENT LINE : ", errorImport,
+            #      "  Length:", len(errorImport))
+            # print("currentErrorInFile : ", currentErrorInFile,
+            #      "  Length:", len(currentErrorInFile))
+            # print("errorImport == currentErrorInFile : ",
+            #      errorImport == currentErrorInFile)
+            print(
+                "the error inside script mismatch with regex compiler message     :", errorImport)
             return False
 
 
@@ -185,5 +196,8 @@ if __name__ == "__main__":
     print("Chain: startDebuging > fileLineFinder > errorFinder > modifyFile")
     regex_file_path = r"(\/.*\.[\w:]+)|([\w:]+\.\w+)"
     regex_line_number = r"\d+"
-    regex_extract_error = r"from \w+\.\w+ import \w+"
+    # regex_extract_error = r"from \w+\.\w+ import \w+"
+    # \s*from\s(\w+\.)*\w+\s+import\s+(\w+)*
+    regex_extract_error = r"\s*from\s(\w+\.)*\w+\s+import\s+(\w+)*"
+    # regex_confirmation = r"\s*from \w+\.\w+ import \w+"
     checkMissingFile(startDebuging)
